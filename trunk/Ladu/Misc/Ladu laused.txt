@@ -1,0 +1,809 @@
+
+CREATE TABLE person 
+( 
+  person SERIAL,
+  first_name varchar(100),
+  last_name varchar(100),
+  identity_code varchar(20),
+  birth_date date,
+  created_by INTEGER,
+  updated_by INTEGER,
+  created timestamp,
+  updated timestamp,
+  CONSTRAINT person_pk PRIMARY KEY (person)
+) ;
+
+CREATE TABLE enterprise
+( enterprise SERIAL,
+  name text,
+  full_name text,
+  created_by INTEGER,
+  updated_by INTEGER,
+  created timestamp,
+  updated timestamp,
+  CONSTRAINT enterprise_pk PRIMARY KEY (enterprise)
+) ;
+
+CREATE TABLE subject_type 
+( subject_type INTEGER NOT NULL ,
+  type_name varchar(200),
+  CONSTRAINT subject_type_pk PRIMARY KEY (subject_type)
+) ;
+
+CREATE TABLE employee 
+( employee SERIAL,
+  person_fk INTEGER references person(person),
+  enterprise_fk INTEGER references enterprise(enterprise),
+  struct_unit_fk INTEGER,
+  active varchar(1),
+  CONSTRAINT employee_pk PRIMARY KEY (employee)
+) ;
+
+CREATE TABLE user_account 
+( user_account SERIAL,
+  subject_type_fk INTEGER references subject_type(subject_type),
+  subject_fk INTEGER references employee(employee),
+  username varchar(50),
+  passw varchar(300),
+  status INTEGER,
+  valid_from date,
+  valid_to date,
+  created_by INTEGER references employee(employee),
+  created timestamp,
+  password_never_expires varchar(1),
+  CONSTRAINT user_account_pk PRIMARY KEY (user_account)
+) ;
+
+CREATE TABLE customer 
+( customer SERIAL,
+  subject_fk INTEGER,
+  subject_type_fk INTEGER references subject_type(subject_type),
+  CONSTRAINT customer_pk PRIMARY KEY (customer)
+) ;
+
+CREATE TABLE employee_role_type 
+( employee_role_type INTEGER NOT NULL ,
+  type_name varchar(200),
+  CONSTRAINT employee_role_type_pk PRIMARY KEY (employee_role_type)
+) ;
+
+CREATE TABLE employee_role 
+( employee_role SERIAL,
+  employee_fk INTEGER references employee(employee),
+  employee_role_type_fk INTEGER references employee_role_type(employee_role_type),
+  active varchar(1),
+  CONSTRAINT employee_role_pk PRIMARY KEY (employee_role)
+) ;
+
+CREATE TABLE address_type 
+( address_type INTEGER NOT NULL ,
+  type_name varchar(200),
+  CONSTRAINT address_type_pk PRIMARY KEY (address_type)
+) ;
+
+CREATE TABLE address 
+( address SERIAL,
+  address_type_fk INTEGER references address_type(address_type),
+  subject_fk INTEGER, /*nõme fk*/
+  subject_type_fk INTEGER references subject_type(subject_type),
+  country varchar(50),
+  county varchar(100),
+  town_village varchar(100),
+  street_address varchar(100),
+  zipcode varchar(50),
+  CONSTRAINT address_pk PRIMARY KEY (address)
+) ;
+
+CREATE TABLE contact_type 
+( contact_type INTEGER NOT NULL ,
+  type_name varchar(200),
+  CONSTRAINT contact_type_pk PRIMARY KEY (contact_type)
+) ;
+
+CREATE TABLE contact
+( contact SERIAL,
+  subject_fk INTEGER, /*nõme fk; kas person v enterprise*/
+  contact_type_fk INTEGER references contact_type(contact_type),
+  value_text text,
+  orderby INTEGER,
+  subject_type_fk INTEGER references subject_type(subject_type),
+  note text,
+  CONSTRAINT contact_pk PRIMARY KEY (contact)
+) ;
+
+CREATE TABLE ent_per_relation_type 
+( ent_per_relation_type INTEGER NOT NULL ,
+  type_name varchar(200),
+  CONSTRAINT ent_per_relation_type_pk PRIMARY KEY (ent_per_relation_type)
+) ;
+
+CREATE TABLE enterprise_person_relation
+( enterprise_person_relation SERIAL,
+  person_fk INTEGER references person(person),
+  enterprise_fk INTEGER references enterprise(enterprise),
+  ent_per_relation_type_fk INTEGER references ent_per_relation_type(ent_per_relation_type),
+  CONSTRAINT enterprise_person_relation_pk PRIMARY KEY (enterprise_person_relation)
+) ;
+
+CREATE TABLE subject_attribute_type 
+( subject_attribute_type SERIAL,
+  subject_type_fk INTEGER references subject_type(subject_type), 
+  type_name varchar(200),
+  data_type INTEGER,
+  orderby INTEGER, 
+  required varchar(1),
+  multiple_attributes varchar(1),
+  created_by_default varchar(1),
+  CONSTRAINT subject_attribute_type_pk PRIMARY KEY (subject_attribute_type)
+) ;
+
+CREATE TABLE subject_attribute
+( subject_attribute SERIAL,
+  subject_fk INTEGER,
+  subject_attribute_type_fk INTEGER references subject_attribute_type(subject_attribute_type), 
+  subject_type_fk INTEGER references subject_type(subject_type), 
+  orderby INTEGER, 
+  value_text text,
+  value_number numeric,
+  value_date date,  
+  data_type INTEGER, 
+  CONSTRAINT subject_attribute_pk PRIMARY KEY (subject_attribute)
+) ;
+
+CREATE TABLE struct_unit /*not used*/
+( struct_unit SERIAL,
+  enterprise_fk INTEGER, 
+  upper_unit_fk INTEGER, 
+  level INTEGER, 
+  name varchar(200), 
+  CONSTRAINT struct_unit_pk PRIMARY KEY (struct_unit)
+) ;
+
+ALTER TABLE person ADD CONSTRAINT person_created_by_fk FOREIGN KEY (created_by) REFERENCES employee(employee)  ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE person ADD CONSTRAINT person_updated_by_fk FOREIGN KEY (updated_by) REFERENCES employee(employee) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE enterprise ADD CONSTRAINT enterprise_created_by_fk FOREIGN KEY (created_by) REFERENCES employee(employee)  ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE enterprise ADD CONSTRAINT enterprise_updated_by_fk FOREIGN KEY (updated_by) REFERENCES employee(employee) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+/* person tabeli indeksid ja piirangud */
+
+CREATE   INDEX person_idx1
+ ON person
+  ( person );
+  
+CREATE   INDEX person_idx2
+ ON person
+  ( upper(first_name) varchar_pattern_ops);
+  
+CREATE   INDEX person_idx3
+ ON person
+  ( upper(last_name) varchar_pattern_ops);
+  
+
+CREATE   INDEX person_idx4
+ ON person
+  ( identity_code varchar_pattern_ops);
+  
+CREATE   INDEX person_idx5
+ ON person
+  ( birth_date);
+
+CREATE   INDEX person_idx6
+ ON person
+  ( created);
+
+CREATE   INDEX person_idx7
+ ON person
+  ( created_by);
+  
+
+
+/* user_account tabeli indeksid ja piirangud */
+
+CREATE   INDEX user_account_idx1
+ ON user_account
+  ( user_account );
+  
+CREATE   INDEX user_account_idx2
+ ON user_account
+  ( username varchar_pattern_ops, passw varchar_pattern_ops, status);
+
+CREATE   INDEX user_account_idx3
+ ON user_account
+  ( subject_type_fk );
+ 
+CREATE   INDEX user_account_idx4
+ ON user_account
+  ( subject_fk );
+
+
+
+/* customer tabeli indeksid ja piirangud */
+
+CREATE   INDEX customer_idx1
+ ON customer
+  ( customer );
+
+CREATE   INDEX customer_idx2
+ ON customer
+  ( subject_fk );
+  
+  
+CREATE   INDEX customer_idx3
+ ON customer
+  ( subject_type_fk );
+  
+
+/* employee_role  tabeli indeksid ja piirangud */
+
+CREATE   INDEX employee_role_idx1
+ ON employee_role
+  ( employee_role );
+
+  
+CREATE   INDEX employee_role_idx2
+ ON employee_role
+  ( employee_fk );
+  
+CREATE   INDEX employee_role_idx3
+ ON employee_role
+  ( employee_role_type_fk );
+  
+
+/* employee  tabeli indeksid ja piirangud */
+
+CREATE   INDEX employee_idx1
+ ON employee
+  ( employee );
+
+CREATE   INDEX employee_idx2
+ ON employee
+  ( person_fk );
+  
+  
+CREATE   INDEX employee_idx3
+ ON employee
+  ( enterprise_fk );
+  
+CREATE   INDEX employee_idx4
+ ON employee
+  ( struct_unit_fk);
+  
+/* address  tabeli indeksid ja piirangud */
+
+CREATE   INDEX address_idx1
+ ON address
+  ( address );
+  
+CREATE   INDEX address_idx2
+ ON address
+  ( address_type_fk );
+  
+CREATE   INDEX address_idx3
+ ON address
+  ( subject_type_fk );
+  
+    
+  
+CREATE   INDEX address_idx4
+ ON address
+  ( upper(country) varchar_pattern_ops);
+  
+CREATE   INDEX address_idx5
+ ON address
+  ( upper(county) varchar_pattern_ops);
+
+CREATE   INDEX address_idx6
+ ON address
+  ( upper(town_village) varchar_pattern_ops);
+
+CREATE   INDEX address_idx7
+ ON address
+  ( upper(street_address) varchar_pattern_ops);
+  
+CREATE   INDEX address_idx8
+ ON address
+  ( upper(zipcode) varchar_pattern_ops);
+  
+/* contact  tabeli indeksid ja piirangud */
+
+CREATE   INDEX contact_idx1
+ ON contact
+  ( contact );
+
+CREATE   INDEX contact_idx2
+ ON contact
+  ( subject_fk );
+
+CREATE   INDEX contact_idx3
+ ON contact
+  ( subject_type_fk );
+
+CREATE   INDEX contact_idx4
+ ON contact
+  ( contact_type_fk );
+
+CREATE   INDEX contact_idx5
+ ON contact
+  ( upper(value_text) varchar_pattern_ops);
+ 
+  
+/* enterprise_person_relation  tabeli indeksid ja piirangud */  
+
+CREATE   INDEX enterprise_person_relation_idx1
+ ON enterprise_person_relation
+  ( enterprise_person_relation );   
+
+CREATE   INDEX enterprise_person_relation_idx2
+ ON enterprise_person_relation
+  ( person_fk );   
+
+CREATE   INDEX enterprise_person_relation_idx3
+ ON enterprise_person_relation
+  ( enterprise_fk ); 
+
+CREATE   INDEX enterprise_person_relation_idx4
+ ON enterprise_person_relation
+  (  ent_per_relation_type_fk );   
+  
+/* enterprise  tabeli indeksid ja piirangud */  
+
+CREATE   INDEX enterprise_idx1
+ ON enterprise
+  ( enterprise );  
+
+CREATE   INDEX enterprise_idx2
+ ON enterprise
+  ( upper(name) varchar_pattern_ops);  
+  
+
+CREATE   INDEX enterprise_idx3
+ ON enterprise
+  ( upper(full_name) varchar_pattern_ops);  
+  
+
+/* subject_attribute  tabeli indeksid ja piirangud */  
+
+CREATE   INDEX subject_attribute_idx1
+ ON subject_attribute
+  ( subject_attribute );  
+  
+CREATE   INDEX subject_attribute_idx2
+ ON subject_attribute
+  ( subject_fk );  
+    
+
+CREATE   INDEX subject_attribute_idx5
+ ON subject_attribute
+  ( subject_attribute_type_fk );  
+
+CREATE   INDEX subject_attribute_idx6
+ ON subject_attribute
+  ( subject_type_fk );  
+
+CREATE   INDEX subject_attribute_idx7
+ ON subject_attribute
+  ( upper(value_text) varchar_pattern_ops);    
+
+CREATE   INDEX subject_attribute_idx8
+ ON subject_attribute
+  ( value_number); 
+
+CREATE   INDEX subject_attribute_idx9
+ ON subject_attribute
+  ( value_date); 
+
+/* subject_attribute_type  tabeli indeksid ja piirangud */    
+
+
+CREATE   INDEX subject_attribute_type_idx1
+ ON subject_attribute_type
+  ( subject_attribute_type); 
+  
+
+CREATE   INDEX subject_attribute_type_idx2
+ ON subject_attribute_type
+  ( subject_type_fk); 
+  
+CREATE   INDEX subject_attribute_type_idx3
+ ON subject_attribute_type
+  ( upper(type_name) varchar_pattern_ops); 
+  
+/* struct_unit  tabeli indeksid ja piirangud */    
+
+
+CREATE   INDEX struct_unit_idx1
+ ON struct_unit
+  ( struct_unit ); 
+  
+CREATE   INDEX struct_unit_idx2
+ ON struct_unit
+  ( enterprise_fk ); 
+  
+
+CREATE   INDEX struct_unit_idx3
+ ON struct_unit
+  ( upper_unit_fk ); 
+  
+
+CREATE   INDEX struct_unit_idx4
+ ON struct_unit
+  ( upper(name) varchar_pattern_ops ); 
+  
+  
+ 
+
+CREATE SEQUENCE item_id ;
+
+CREATE TABLE item_action_type 
+( item_action_type numeric(10,0) NOT NULL ,
+  type_name varchar(200),
+  CONSTRAINT item_action_type_pk PRIMARY KEY (item_action_type)
+) ;
+
+CREATE SEQUENCE item_type_id ;
+
+CREATE TABLE item_type 
+( item_type numeric(10,0) NOT NULL DEFAULT nextval('item_type_id') ,
+  type_name varchar(200),
+  level numeric(10,0),
+  super_type_fk numeric(10,0) references item_type(item_type),
+  CONSTRAINT item_type_pk PRIMARY KEY (item_type)
+) ;
+
+CREATE TABLE unit_type 
+( unit_type numeric(10,0) NOT NULL ,
+  type_name varchar(200),
+  long_name varchar(200),
+  CONSTRAINT unit_type_pk PRIMARY KEY (unit_type)
+) ;
+
+CREATE TABLE item 
+( item numeric(10,0) NOT NULL DEFAULT nextval('item_id'),
+  unit_type_fk numeric(10,0) references unit_type(unit_type),
+  supplier_enterprise_fk integer references enterprise(enterprise),
+  item_type_fk numeric(10,0) references item_type(item_type),
+  name text,
+  store_price numeric,
+  sale_price numeric,
+  producer text,
+  description text,
+  producer_code text,
+  single_item varchar(1),
+  upper_item_fk numeric(10,0),
+  serial_no varchar(100),
+  created timestamp,
+  CONSTRAINT item_pk PRIMARY KEY (item)
+) ;
+
+
+
+CREATE SEQUENCE store_id ;
+
+CREATE TABLE store 
+( store numeric(10,0) NOT NULL DEFAULT nextval('store_id'),
+  name varchar(200),
+  CONSTRAINT store_pk PRIMARY KEY (store)
+) ;
+
+CREATE SEQUENCE item_store_id ;
+
+CREATE TABLE item_store 
+( item_store numeric(10,0) NOT NULL DEFAULT nextval('item_store_id'),
+  store_fk numeric(10,0) references store(store),
+  item_fk numeric(10,0) references item(item),
+  item_count numeric,
+  CONSTRAINT item_store_pk PRIMARY KEY (item_store)
+) ;
+
+
+CREATE SEQUENCE item_attribute_type_id ;
+
+CREATE TABLE item_attribute_type 
+( item_attribute_type numeric(10,0) NOT NULL DEFAULT nextval('item_attribute_type_id'),
+  type_name text,
+  multiple_attributes varchar(1),
+  data_type numeric(10,0),
+  CONSTRAINT item_attribute_type_pk PRIMARY KEY (item_attribute_type)
+) ;
+
+CREATE SEQUENCE type_attribute_id ;
+
+CREATE TABLE type_attribute 
+( type_attribute numeric(10,0) NOT NULL DEFAULT nextval('type_attribute_id'),
+  item_type_fk numeric(10,0) references item_type(item_type),
+  item_attribute_type_fk numeric(10,0) references item_attribute_type(item_attribute_type),
+  orderby numeric(10,0),
+  required varchar(1),
+  created_by_default varchar(1),
+  CONSTRAINT type_attribute_pk PRIMARY KEY (type_attribute)
+) ;
+
+
+
+
+CREATE SEQUENCE item_attribute_id ;
+
+CREATE TABLE item_attribute
+( item_attribute numeric(10,0) NOT NULL DEFAULT nextval('item_attribute_id'),
+  item_attribute_type_fk numeric(10,0) references item_attribute_type(item_attribute_type),
+  item_fk numeric(10,0) references item(item),
+  type_name varchar(200),
+  value_text text,
+  value_number numeric,
+  value_date date,
+  data_type numeric(10,0),
+  orderby numeric(10,0),
+  CONSTRAINT item_attribute_pk PRIMARY KEY (item_attribute)
+) ;
+
+CREATE TABLE price_list_status_type 
+( price_list_status_type numeric(10,0) NOT NULL ,
+  type_name varchar(200),
+  CONSTRAINT price_list_status_type_pk PRIMARY KEY (price_list_status_type)
+) ;
+
+
+
+
+CREATE SEQUENCE price_list_id ;
+
+CREATE TABLE price_list
+( price_list numeric(10,0) NOT NULL DEFAULT nextval('price_list_id'),
+  price_list_status_type_fk numeric(10,0) references price_list_status_type(price_list_status_type),
+  default_discount_xtra numeric(10,0),
+  date_from date,
+  date_to date,
+  note text,
+  created_by integer references employee(employee),
+  created timestamp,
+  updated_by integer references employee(employee),
+  updated timestamp,
+  CONSTRAINT price_list_pk PRIMARY KEY (price_list)
+) ;
+
+CREATE SEQUENCE item_price_list_id ;
+
+CREATE TABLE item_price_list
+( item_price_list numeric(10,0) NOT NULL DEFAULT nextval('item_price_list_id'),
+  price_list_fk numeric(10,0) references price_list(price_list),
+  item_fk numeric(10,0) references item(item),
+  discount_xtra numeric(10,0),
+  sale_price numeric,
+  created timestamp,
+  CONSTRAINT item_price_list_pk PRIMARY KEY (item_price_list)
+) ;
+
+CREATE SEQUENCE item_action_id ;
+
+CREATE TABLE item_action
+( item_action numeric(10,0) NOT NULL DEFAULT nextval('item_action_id'),
+  item_action_type_fk numeric(10,0) references item_action_type(item_action_type),
+  item_fk numeric(10,0) references item(item),
+  store_from_fk numeric(10,0) references store(store),
+  store_to_fk numeric(10,0) references store(store),
+  action_date timestamp,
+  created_by integer references employee(employee),
+  item_count numeric(10,0),
+  action_price numeric,
+  action_note text,
+  created timestamp,
+  CONSTRAINT item_action_pk PRIMARY KEY (item_action)
+) ;
+
+
+CREATE SEQUENCE customer_price_list_id ;
+
+CREATE TABLE customer_price_list 
+( customer_price_list numeric(10,0) NOT NULL DEFAULT nextval('customer_price_list_id') ,
+  customer_fk integer references customer(customer),
+  price_list_fk numeric(10,0) references price_list(price_list),
+  CONSTRAINT customer_price_list_pk PRIMARY KEY (customer_price_list)
+) ;
+
+
+/* item tabeli indeksid ja piirangud */
+
+CREATE   INDEX item_idx1
+ ON item
+  ( item);
+
+CREATE   INDEX item_idx2
+ ON item
+  ( supplier_enterprise_fk);
+  
+CREATE   INDEX item_idx3
+ ON item
+  ( item_type_fk);
+
+  
+CREATE   INDEX item_idx4
+ ON item
+  ( upper(name) varchar_pattern_ops);
+  
+CREATE   INDEX item_idx5
+ ON item
+  (store_price);
+
+CREATE   INDEX item_idx6
+ ON item
+  (sale_price);
+
+CREATE   INDEX item_idx7
+ ON item
+  ( upper(serial_no) varchar_pattern_ops);  
+
+CREATE   INDEX item_idx8
+ ON item
+  ( upper(producer) varchar_pattern_ops); 
+
+CREATE   INDEX item_idx9
+ ON item
+  ( upper(description) varchar_pattern_ops); 
+  
+
+ /* item_attribute tabeli indeksid ja piirangud */
+
+CREATE   INDEX item_attribute_idx1
+ ON item_attribute
+  ( item_attribute); 
+
+CREATE   INDEX item_attribute_idx2
+ ON item_attribute
+  ( item_fk); 
+  
+CREATE   INDEX item_attribute_idx3
+ ON item_attribute
+  ( upper(value_text) varchar_pattern_ops ); 
+  
+CREATE   INDEX item_attribute_idx4
+ ON item_attribute
+  ( item_attribute_type_fk); 
+
+CREATE   INDEX item_attribute_idx5
+ ON item_attribute
+  ( value_number ); 
+
+CREATE   INDEX item_attribute_idx6
+ ON item_attribute
+  ( value_date ); 
+  
+ /* item_action tabeli indeksid ja piirangud */
+
+CREATE   INDEX item_action_idx1
+ ON item_action
+  ( item_action);   
+
+CREATE   INDEX item_action_idx2
+ ON item_action
+  ( item_fk);   
+  
+CREATE   INDEX item_action_idx3
+ ON item_action
+  ( item_action_type_fk);   
+  
+  
+CREATE   INDEX item_action_idx4
+ ON item_action
+  ( action_date);  
+  
+CREATE   INDEX item_action_idx5
+ ON item_action
+  ( store_from_fk );   
+  
+CREATE   INDEX item_action_idx6
+ ON item_action
+  ( store_to_fk );
+  
+ /* type_attribute tabeli indeksid ja piirangud */
+
+CREATE   INDEX type_attribute_idx1
+ ON type_attribute
+  ( type_attribute);   
+  
+CREATE   INDEX type_attribute_idx2
+ ON type_attribute
+  ( item_attribute_type_fk);   
+  
+CREATE   INDEX type_attribute_idx3
+ ON type_attribute
+  ( item_type_fk);   
+
+ /* item_type tabeli indeksid ja piirangud */
+
+CREATE   INDEX item_type_idx1
+ ON item_type
+  ( item_type); 
+  
+CREATE   INDEX item_type_idx2
+ ON item_type
+  ( super_type_fk); 
+  
+CREATE   INDEX item_type_idx3
+ ON item_type
+  ( level); 
+  
+ /* price_list tabeli indeksid ja piirangud */
+
+CREATE   INDEX price_list_idx1
+ ON price_list
+  ( price_list); 
+
+CREATE   INDEX price_list_idx2
+ ON price_list
+  ( price_list_status_type_fk); 
+  
+CREATE   INDEX price_list_idx3
+ ON price_list
+  ( created);
+
+CREATE   INDEX price_list_idx4
+ ON price_list
+  ( created_by); 
+  
+CREATE   INDEX price_list_idx5
+ ON price_list
+  ( date_from, date_to);   
+
+
+CREATE   INDEX price_list_idx6
+ ON price_list
+  ( note varchar_pattern_ops);  
+  
+CREATE   INDEX price_list_idx7
+ ON price_list
+  ( updated);
+
+CREATE   INDEX price_list_idx8
+ ON price_list
+  ( updated_by); 
+  
+ /* customer_price_list tabeli indeksid ja piirangud */
+
+CREATE   INDEX customer_price_list_idx1
+ ON customer_price_list
+  ( customer_price_list); 
+
+CREATE   INDEX customer_price_list_idx2
+ ON customer_price_list
+  ( customer_fk); 
+  
+CREATE   INDEX customer_price_list_idx3
+ ON customer_price_list
+  ( price_list_fk); 
+  
+ /* item_price_list tabeli indeksid ja piirangud */
+
+CREATE   INDEX item_price_list_idx1
+ ON item_price_list
+  ( item_price_list); 
+  
+CREATE   INDEX item_price_list_idx2
+ ON item_price_list
+  ( price_list_fk); 
+
+CREATE   INDEX item_price_list_idx3
+ ON item_price_list
+  ( item_fk); 
+  
+ /* item_store tabeli indeksid ja piirangud */
+
+CREATE   INDEX item_store_idx1
+ ON item_store
+  ( item_store);   
+  
+
+CREATE   INDEX item_store_idx2
+ ON item_store
+  ( item_fk, store_fk);  
+  
+CREATE   INDEX item_store_idx3
+ ON item_store
+  ( item_fk); 
+
+CREATE   INDEX item_store_idx4
+ ON item_store
+  ( item_count);  
+  
+  
+  
+  
