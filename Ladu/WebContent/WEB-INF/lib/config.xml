@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<appconfig>
+	<dbType>PostgreSQL</dbType>
+	<driver>org.postgresql.Driver</driver>
+      	<jdbcConnectionString>jdbc:postgresql://imbi.ld.ttu.ee:5432/t093560_ladu</jdbcConnectionString>
+	<databaseIP>imbi.ld.ttu.ee:5432</databaseIP>
+	<databaseCatalog>t093560_ladu</databaseCatalog>
+	<databaseUsername>t093560</databaseUsername>
+	<databasePassword></databasePassword>
+	<sourceTarget>C:/Users/Kaspar/Documents/Projektid/Ladu/src</sourceTarget>
+	<projectName>Ladu</projectName>
+	<topLevel></topLevel>
+	<libPath>C:/Users/Kaspar/Documents/Projektid/Ladu/WebContent/WEB-INF/lib</libPath>
+	<schemaStrategy>PARTIAL</schemaStrategy>
+</appconfig>
