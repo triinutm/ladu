@@ -10,11 +10,12 @@ public class EntranceAction implements Controller {
 
 	@Override
 	public ModelAndView handleRequest(HttpServletRequest req, HttpServletResponse res) throws Exception {
-		ModelAndView mav = new ModelAndView("jsp/login.jsp");
-		
-		
-		// TODO Auto-generated method stub
-		System.out.println("tere");
+		ModelAndView mav = new ModelAndView("WEB-INF/jsp/login.jsp");
+		if(req.getParameter("denied") != null){
+			if(req.getParameter("denied").equalsIgnoreCase("true")){
+				mav.addObject("failed", "Login failed");
+			}
+		}
 		return mav;
 	}
 

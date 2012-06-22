@@ -1,7 +1,9 @@
+<%@ include file="/WEB-INF/jsp/include.jsp" %>
 <html>
 <head><title>Login please.</title></head>
 <body onload='document.f.j_username.focus();'>
 	<h3>Login with Username and Password</h3>
+	<h4><font color="red"><c:out value="${failed}"/></font></h4>
 	<form id="f" name="f" action="j_spring_security_check" method="post">
 		<table>
 			<tr>
