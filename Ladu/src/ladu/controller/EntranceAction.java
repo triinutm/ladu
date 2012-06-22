@@ -14,7 +14,7 @@ public class EntranceAction implements Controller {
 
 	@Override
 	public ModelAndView handleRequest(HttpServletRequest req, HttpServletResponse res) throws Exception {
-		ModelAndView mav = new ModelAndView("login.jsp");
+		ModelAndView mav = new ModelAndView("jsp/login.jsp");
 		
 		
 		// TODO Auto-generated method stub
