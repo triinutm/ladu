@@ -14,8 +14,6 @@
 		<logout logout-url='/logout' logout-success-url="/" />
 	</http>
 
-
-			
 	<authentication-manager>
 		<authentication-provider>
 			<user-service id="userDetailsService">
